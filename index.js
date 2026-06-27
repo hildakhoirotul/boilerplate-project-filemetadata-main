@@ -21,6 +21,8 @@ const upload = multer({
 
 // Upload endpoint
 app.post("/api/fileanalyse", upload.single("upfile"), (req, res) => {
+  console.log("Request masuk!");
+  console.log(req.file);
   if (!req.file) {
     return res.status(400).json({
       error: "No file uploaded"
