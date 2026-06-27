@@ -5,26 +5,21 @@ require("dotenv").config();
 
 const app = express();
 
+// Middleware
 app.use(cors());
 app.use("/public", express.static(process.cwd() + "/public"));
 
+// Home
 app.get("/", (req, res) => {
   res.sendFile(process.cwd() + "/views/index.html");
 });
 
-// Konfigurasi multer
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  }
+// Multer (menyimpan file di memory)
+const upload = multer({
+  storage: multer.memoryStorage()
 });
 
-const upload = multer({ storage: storage });
-
-// Endpoint upload
+// Upload endpoint
 app.post("/api/fileanalyse", upload.single("upfile"), (req, res) => {
   if (!req.file) {
     return res.status(400).json({
@@ -32,15 +27,17 @@ app.post("/api/fileanalyse", upload.single("upfile"), (req, res) => {
     });
   }
 
-  res.json({
-    name: req.file.originalname,
-    type: req.file.mimetype,
-    size: req.file.size
+  const { originalname, mimetype, size } = req.file;
+
+  return res.status(200).json({
+    name: originalname,
+    type: mimetype,
+    size: size
   });
 });
 
+// Listen
 const port = process.env.PORT || 3000;
-
 app.listen(port, () => {
-  console.log("Listening on port " + port);
+  console.log(`Listening on port ${port}`);
 });
